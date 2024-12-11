@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจองโต๊ะ</title>
+    <style>
+        .table {
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            margin: 10px;
+            text-align: center;
+            line-height: 100px;
+            border-radius: 10px;
+            color: white;
+            cursor: pointer;
+        }
+        .available { background-color: green; }
+        .reserved { background-color: yellow; color: black; }
+        .occupied { background-color: red; }
+    </style>
+</head>
+<body>
+    <h1>ระบบจองโต๊ะ</h1>
+<font style="color:Yellow"><h2>สีเหลือง = ยังไม่มีการจอง&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</font>
+<font style="color:green">สีเขียว = มีการจองแล้ว&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<font style="color:#FF0000">สีแดง = ลูกค้านั่งโต๊ะแล้ว</h2>
+    <div id="tables"></div>
+
+    <script>
+        // ข้อมูลโซนและจำนวนโต๊ะในแต่ละโซน
+        const zones = {
+            A: 20,
+            B: 37,
+            C: 27,
+            D: 7,
+            E: 10
+        };
+
+        // ตรวจสอบว่ามีข้อมูลใน LocalStorage หรือไม่
+        const savedTables = localStorage.getItem('tables');
+        const tables = savedTables 
+            ? JSON.parse(savedTables) 
+            : generateTables(); // ถ้าไม่มี ให้สร้างโต๊ะใหม่
+
+        // ฟังก์ชันสร้างโต๊ะทั้งหมด
+        function generateTables() {
+            const allTables = [];
+            for (const [zone, count] of Object.entries(zones)) {
+                for (let i = 1; i <= count; i++) {
+                    allTables.push({ id: `${zone}${i}`, status: "available" });
+                }
+            }
+            return allTables;
+        }
+
+        const tableContainer = document.getElementById('tables');
+
+        // ฟังก์ชันแสดงโต๊ะ
+        function renderTables() {
+            tableContainer.innerHTML = '';
+            tables.forEach(table => {
+                const div = document.createElement('div');
+                div.className = `table ${table.status}`;
+                div.innerText = table.id;
+                div.onclick = () => changeStatus(table.id);
+                tableContainer.appendChild(div);
+            });
+        }
+
+        // ฟังก์ชันเปลี่ยนสถานะโต๊ะ
+        function changeStatus(id) {
+            const table = tables.find(t => t.id === id);
+            if (table.status === "available") {
+                table.status = "reserved";
+            } else if (table.status === "reserved") {
+                table.status = "occupied";
+            } else {
+                table.status = "available";
+            }
+            saveTables(); // บันทึกข้อมูลทุกครั้งที่มีการเปลี่ยนแปลง
+            renderTables();
+        }
+
+        // ฟังก์ชันบันทึกข้อมูลลง LocalStorage
+        function saveTables() {
+            localStorage.setItem('tables', JSON.stringify(tables));
+        }
+
+        // เรียกฟังก์ชันแสดงโต๊ะตอนโหลดหน้า
+        renderTables();
+    </script>
+</body>
+</html>
